@@ -1,0 +1,3 @@
+{"site_name": "Mission Control", "owner_name": "Sam", "owner_aliases": ["Sammy"], "timezone": "America/New_York", "tz_label": "ET",
+ "dash_host": "example.duckdns.org", "agent_data_dir": "__OUT__", "team_log_dir": "__OUT__/team-log",
+ "coordinator": "Coordinator", "stale_overrides": [{"owner": "Helper", "job": "car registration", "days": 35}]}

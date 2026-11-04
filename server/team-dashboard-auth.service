@@ -1,0 +1,27 @@
+[Unit]
+Description=Mission Control login service (passkeys + password, localhost only; Caddy forward_auth)
+After=network.target
+
+[Service]
+User=teamauth
+Group=teamauth
+EnvironmentFile=-/opt/team-dashboard/host.env
+ExecStart=/opt/team-dashboard/auth/venv/bin/python /opt/team-dashboard/auth/auth_service.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadWritePaths=/opt/team-dashboard/auth-data
+MemoryMax=128M
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
