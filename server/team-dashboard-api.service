@@ -1,0 +1,27 @@
+[Unit]
+Description=Mission Control closeout API (stdlib Python, localhost only, behind the sign-in)
+After=network.target
+
+[Service]
+User=teamdash
+Group=teamdash
+EnvironmentFile=-/opt/team-dashboard/host.env
+ExecStart=/usr/bin/python3 /opt/team-dashboard/api/closeout_api.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadWritePaths=/opt/team-dashboard/queue
+MemoryMax=64M
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target

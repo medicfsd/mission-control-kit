@@ -1,0 +1,27 @@
+# personal values + secrets: never commit
+box/config.json
+box/.dashboard_password
+box/.webhook.env
+*.env
+!server/host.env.example
+*.key
+*.pem
+id_*
+known_hosts*
+*token*
+.money/
+# runtime state, logs, caches
+box/www/data.json
+box/closeouts_processed.jsonl
+box/briefing_sticky_done.json
+box/.closeouts_offset
+*.lock
+*.log
+__pycache__/
+.venv/
+*.tmp
+*.bak*
+# team log data stays out of the code repo
+team-log/*.jsonl
+team-log/briefings/
+team-log/usage/

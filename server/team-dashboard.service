@@ -1,0 +1,23 @@
+[Unit]
+Description=Mission Control dashboard (Caddy: HTTPS, static site, sign-in via forward_auth)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=teamdash
+Group=teamdash
+ExecStart=/opt/team-dashboard/bin/caddy run --config /opt/team-dashboard/Caddyfile --adapter caddyfile
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+RestartSec=5
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/team-dashboard/data
+Environment=HOME=/opt/team-dashboard/data XDG_DATA_HOME=/opt/team-dashboard/data XDG_CONFIG_HOME=/opt/team-dashboard/data
+
+[Install]
+WantedBy=multi-user.target

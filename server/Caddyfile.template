@@ -1,0 +1,76 @@
+{
+	admin off
+	storage file_system /opt/team-dashboard/data/caddy
+}
+
+# Public dashboard. Primary hostname comes from DASH_HOST in /opt/team-dashboard/host.env (one value shared with the
+# login service = WebAuthn RP ID/origin, and the closeout API's allowed Origin). Loaded by the systemd drop-in
+# /etc/systemd/system/team-dashboard.service.d/host.conf. Change it there, then restart all three services.
+(dashboard_site) {
+	header {
+		X-Robots-Tag "noindex, nofollow"
+		Cache-Control "no-store"
+		Strict-Transport-Security "max-age=31536000"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		# same-origin (not no-referrer): with no-referrer Safari sends "Origin: null" on the sign-in form POST
+		Referrer-Policy "same-origin"
+		-Server
+	}
+	# Login UI + passkey/password endpoints: public, served by the auth service (localhost only)
+	@login path /login /login/* /logout /auth/*
+	handle @login {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy 127.0.0.1:8090
+	}
+	# Everything else (dashboard, data.json, closeout API) requires a valid session cookie
+	handle {
+		forward_auth 127.0.0.1:8090 {
+			uri /auth/verify
+		}
+		root * /opt/team-dashboard/www
+		# closeout API (Done buttons): proxied only after forward_auth above; service listens on localhost only
+		request_body /api/* {
+			max_size 16KB
+		}
+		reverse_proxy /api/* 127.0.0.1:8089
+		file_server
+	}
+	log {
+		output file /opt/team-dashboard/data/access.log {
+			roll_size 5MiB
+			roll_keep 3
+		}
+	}
+}
+
+{$DASH_HOST} {
+	import dashboard_site
+}
+
+# Loopback-only copy for checks over an SSH tunnel (not reachable from the internet). Login "check"; install.sh puts a
+# random password's bcrypt hash here and the plain one in /opt/team-dashboard/check.netrc (root only, never printed).
+http://127.0.0.1:8088 {
+	bind 127.0.0.1
+	root * /opt/team-dashboard/www
+	basic_auth {
+		check __CHECK_HASH__
+	}
+	header {
+		X-Robots-Tag "noindex, nofollow"
+		Cache-Control "no-store"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		# same-origin (not no-referrer): with no-referrer Safari sends "Origin: null" on the sign-in form POST
+		Referrer-Policy "same-origin"
+		-Server
+	}
+	# closeout API (Done buttons): proxied only after basic_auth above; service listens on localhost only
+	request_body /api/* {
+		max_size 16KB
+	}
+	reverse_proxy /api/* 127.0.0.1:8089
+	file_server
+}
