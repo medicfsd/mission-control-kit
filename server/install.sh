@@ -49,7 +49,7 @@ for v in SITE_NAME OWNER_DISPLAY_NAME; do [[ "${!v}" =~ [\"\$\`\\] ]] && die "$v
 say "packages"
 if command -v dnf >/dev/null; then PM=dnf; dnf -y -q install python3 python3-pip curl tar policycoreutils-python-utils >/dev/null
 elif command -v apt-get >/dev/null; then PM=apt; export DEBIAN_FRONTEND=noninteractive
-  apt-get -qq update; apt-get -y -qq install python3 python3-venv python3-pip curl tar iptables-persistent >/dev/null
+  apt-get -qq update; apt-get -y -qq --no-install-recommends install python3 python3-venv python3-pip curl ca-certificates tar iptables-persistent >/dev/null
 else die "need Oracle Linux (dnf) or Ubuntu (apt)"; fi
 
 # ---- users + folders ----------------------------------------------------------------------------------------------
@@ -109,6 +109,7 @@ PY
 chown root:teamdash "$R/Caddyfile.new"; chmod 640 "$R/Caddyfile.new"
 DASH_HOST="$DASH_HOST" "$R/bin/caddy" validate --config "$R/Caddyfile.new" --adapter caddyfile >/dev/null 2>&1 || die "Caddyfile did not validate"
 mv -f "$R/Caddyfile.new" "$R/Caddyfile"
+chown -R teamdash:teamdash "$R/data"   # "caddy validate" ran as root and may have created access.log / caddy storage as root
 
 # ---- systemd --------------------------------------------------------------------------------------------------------
 say "services"
